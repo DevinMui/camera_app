@@ -27,9 +27,7 @@ var userSchema = new mongoose.Schema({
   name: String
 , fb: String
 , tw: String
-, pictures: [
-		{"path": String }
-	]
+, pictures: [String]
 });
 
 var User = mongoose.model('User', userSchema)
@@ -48,7 +46,16 @@ app.post('/upload', upload.single('picture'), function(req, res){
 	console.log(req.file)
 	var process = spawn('python',["../eigen/eigen.py", "uploads/" + req.file ]);
 	setTimeout(function(){
-		res.send(find(file)) // should work??
+	var file = ""
+	fs.readFile('file.txt', 'utf8', function (err,data) {
+	  if (err) {
+	    return console.log(err);
+	  }
+	  console.log(data);
+	  file = data
+	});
+		user = User.find({ "pictures": file })
+		res.send(user)
 	}, 1000) // wait a second
 })
 
