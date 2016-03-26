@@ -5,6 +5,7 @@ var mongoose = require('mongoose');
 var spawn = require("child_process").execFileSync;
 var sys = require('sys')
 var crypto = require('crypto');
+var PythonShell = require('python-shell');
 
 var storage = multer.diskStorage({
 	destination: function(req, file, cb){
@@ -82,12 +83,15 @@ app.get('/', function(req, res){
 })
 
 app.post('/', upload.single('picture'), function(req, res){
-	var process = spawn('python ../eigen/eigen.py uploads/' + req.file, function(error, stdout, stderr){
-		sys.print("stdout: " + stdout)
-		sys.print("stderr: " + stderr)
-		user = User.find({ "pictures": file })
+	var options = {
+		args: ["uploads/" + req.file.filename]
+	}
+	PythonShell.run('eigen.py', options, function (err) {
+	  if (err) throw err;
+	  console.log('finished');
+	  user = User.find({ "pictures": file })
 		res.render("index", {"image": req.file.filename })
-	})
+	});
 })
 
 app.post('/add_picture', store.single('picture'), function(req, res){

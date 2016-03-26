@@ -27,7 +27,7 @@ def get_images_and_labels(path):
             labels.append(nbr)
     return images, labels
 
-path = 'pictures/'
+path = '../web/pictures'
 
 images, labels = get_images_and_labels(path)
 
