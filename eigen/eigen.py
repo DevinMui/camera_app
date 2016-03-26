@@ -56,9 +56,9 @@ else:
 # mongo update
 '''
 
-db.users.update({"_id" : ObjectId("56f6b6d56e401f4010071db8")}, {"pictures": ["pictures/1.jpg", "pictures/6.jpg", "pictures/7.jpg", "pictures/8.jpg", "pictures/9.jpg", "pictures/10.jpg", "pictures/11.jpg"], "name": "Devin", "fb": "", "tw": "devinwmui"})
+db.users.update({"_id" : ObjectId("56f6fe5a1c733c6e79be1fc4")}, {"pictures": ["pictures/1.jpg", "pictures/6.jpg", "pictures/7.jpg", "pictures/8.jpg", "pictures/9.jpg", "pictures/10.jpg", "pictures/11.jpg"], "name": "Devin", "fb": "", "tw": "devinwmui"})
 
-db.users.update({"_id": ObjectId("56f70267d4f6728118e30d26")}, {"pictures": ["pictures/2.jpg", "pictures/3.jpg", "pictures/4.jpg", "pictures/5.jpg"], "name": "Miguel", "tw": "pandawanyt", "fb": ""})
+db.users.update({"_id": ObjectId("56f70bf3ae8f15587b9108c1")}, {"pictures": ["pictures/2.jpg", "pictures/3.jpg", "pictures/4.jpg", "pictures/5.jpg"], "name": "Miguel", "tw": "pandawanyt", "fb": ""})
 
 
 '''
