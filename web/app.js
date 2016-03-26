@@ -17,6 +17,15 @@ var storage = multer.diskStorage({
     });
 	}
 })
+var Twitter = require('twitter');
+
+var client = new Twitter({
+  consumer_key: 'WTyIbMfgzZ8lRrrJQr0Xn6ipI',
+  consumer_secret: 'NZQi3ZzlkC3LzK01yoabOKqzZpN6sDDwvLJijwQcyVI3IorbYI',
+  access_token_key: '2840635218-unXx6CSGSoks9jC06Ghtedc3LaqqvjunCNFfVuP',
+  access_token_secret: 'bXXFwOVlO0mDgkmRrbJqSLD4qMzCCgVtPFU6vZjdYgZuI'
+});
+
 var upload = multer({storage: storage})
 var fs = require('fs');
 var app = express()
@@ -79,7 +88,7 @@ app.post('/match', function(req, res){
 })
 
 app.get('/', function(req, res){
-	res.render('index', {"image": ""})
+	res.render('index', {"image": "", "tweets": ""})
 })
 
 var docu = ""
@@ -109,7 +118,14 @@ app.post('/', upload.single('picture'), function(req, res){
 		  		console.log(doc.name)
 		  		console.log(doc.fb)
 		  		console.log(doc.tw)
-		  		res.render("index", {"image": req.file.filename })
+		  		var params = {screen_name: doc.tw, count: 5};
+					client.get('statuses/user_timeline', params, function(error, tweets, response){
+					  if (!error) {
+					    console.dir(tweets);
+					    res.render("index", {"image": req.file.filename, "tweets": tweets })
+					  }
+					});
+
 		      db.close();
 		  });
 		});
