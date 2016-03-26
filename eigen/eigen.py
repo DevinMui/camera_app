@@ -1,6 +1,11 @@
 import cv2, os
 import numpy as np
 from PIL import Image
+import requests
+import json
+import sys
+
+url = "http://localhost:3000/match"
 
 cascadePath = "face.xml"
 faceCascade = cv2.CascadeClassifier(cascadePath)
@@ -10,12 +15,13 @@ recognizer = cv2.createLBPHFaceRecognizer()
 
 def get_images_and_labels(path):
     image_paths = [os.path.join(path, f) for f in os.listdir(path)]
+    sys.stdout.write(image_paths)
     images = []
     labels = []
     for image_path in image_paths:
         image_pil = Image.open(image_path).convert('L')
         image = np.array(image_pil, 'uint8')
-        nbr = int(os.path.split(image_path)[1].split(".")[0]
+        nbr = int(os.path.split(image_path)[1].split(".")[0])
         faces = faceCascade.detectMultiScale(image)
         for (x, y, w, h) in faces:
             images.append(image[y: y + h, x: x + w])
@@ -35,10 +41,14 @@ faces = faceCascade.detectMultiScale(image)
 nbr = ""
 for(x,y,w,h) in faces:
     nbr = recognizer.predict(image[y: y + h, x: x + w])
-    nbr = "pictures/" + nbr + ".jpg"
+    nbr = "pictures/" + str(nbr[0]) + ".jpg"
     break
+
+print nbr
 
 if nbr:
     # request number
+    r = requests.post(url,json={"match": nbr})
 else:
     # request number = 0
+    r = requests.post(url,json={"match": "nothing"})

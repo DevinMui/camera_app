@@ -2,22 +2,42 @@ var express = require('express')
 var bodyParser = require('body-parser')
 var multer = require('multer')
 var mongoose = require('mongoose');
-var spawn = require("child_process").spawn;
-var upload = multer({ dest: 'uploads/' })
+var spawn = require("child_process").execFileSync;
+var sys = require('sys')
+var crypto = require('crypto');
+
+var storage = multer.diskStorage({
+	destination: function(req, file, cb){
+		cb(null, 'uploads/')
+	},
+	filename: function(req, file, cb){
+		crypto.pseudoRandomBytes(16, function (err, raw) {
+      cb(null, raw.toString('hex') + Date.now() + '.jpg')
+    });
+	}
+})
+var upload = multer({storage: storage})
 var fs = require('fs');
 var app = express()
+app.use(express.static('uploads'));
+
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: false }))
+
+// parse application/json
+app.use(bodyParser.json())
 var MongoClient = require('mongodb').MongoClient;
 var assert = require('assert');
 mongoose.connect('mongodb://localhost/test');
+app.engine('html', require('ejs').renderFile);
+app.set('view engine', 'ejs');
 var conn = mongoose.connection
 var storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, 'pictures/')
   },
   filename: function (req, file, cb) {
-
-      cb(null,  number() + ".jpg" );
-
+    cb(null, parseInt(number() + 1) + ".jpg");
   }
 });
 var store = multer({ storage: storage });
@@ -32,36 +52,50 @@ var userSchema = new mongoose.Schema({
 
 var User = mongoose.model('User', userSchema)
 
-function number(){
-	var number = 0
-	fs.readdir("./pictures", function(err, items) {
-    for (var i=0; i<items.length; i++) {
-      number += 1
-    }
-	});
-	return number
+function number() {
+  var shell = require('shelljs');
+
+  return shell.exec("ls ./pictures | wc -l", { silent:true }).output;
 }
 
-app.post('/upload', upload.single('picture'), function(req, res){
-	console.log(req.file)
-	var process = spawn('python',["../eigen/eigen.py", "uploads/" + req.file ]);
-	setTimeout(function(){
-	var file = ""
-	fs.readFile('file.txt', 'utf8', function (err,data) {
-	  if (err) {
-	    return console.log(err);
-	  }
-	  console.log(data);
-	  file = data
-	});
+app.get('/number', function(req, res){
+	console.log(number())
+	res.send(number())
+})
+
+app.get('/add', function(req, res){
+	res.render('add')
+})
+
+app.get('/add_face', function(req, res){
+	res.render('add_face')
+})
+
+app.post('/match', function(req, res){
+	file = req.body.match
+	console.log(file)
+	res.send('Hello')
+})
+
+app.get('/', function(req, res){
+	res.render('index', {"image": ""})
+})
+
+app.post('/', upload.single('picture'), function(req, res){
+	var process = spawn('python ../eigen/eigen.py uploads/' + req.file, function(error, stdout, stderr){
+		sys.print("stdout: " + stdout)
+		sys.print("stderr: " + stderr)
 		user = User.find({ "pictures": file })
-		res.send(user)
-	}, 1000) // wait a second
+		res.render("index", {"image": req.file.filename })
+	})
 })
 
 app.post('/add_picture', store.single('picture'), function(req, res){
-	User.update({ _id: req.body.id }, {$push: {"pictures": req.body.path }}, {safe: true, upsert: true}, function(err, user) {
+	var id = mongoose.Types.ObjectId("56f6b6d56e401f4010071db8")
+	var picture = "pictures/" + req.file.filename
+	User.update({ _id: id }, { $push: { "pictures": picture }}, function(err, user) {
 	  console.dir(user);
+	  console.log(err)
 	})
 	res.send("uploaded! training...")
 })
@@ -71,20 +105,6 @@ app.post('/new', function(req, res){
 		name: req.body.name,
 		fb: req.body.fb,
 		tw: req.body.tw,
-		pictures: []
-	})
-	user.save(function(err, user){
-		console.dir(user)
-	})
-	console.log(user)
-	res.send(user)
-})
-
-app.get('/test', function(req, res){
-	var user = new User ({
-		name: "Orange",
-		fb: "Orange",
-		tw: "Orange",
 		pictures: []
 	})
 	user.save(function(err, user){

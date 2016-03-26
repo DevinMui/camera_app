@@ -1,0 +1,19 @@
+<!doctype html>
+<html>
+<head>
+	<title>Upload a picture</title>
+</head>
+<body>
+	<h1>Upload a Picture</h1>
+	<% if(image) { %>
+		<!--add fb here-->
+		<img src="<%= image %>"/>
+		<!--add twitter here-->
+	<% } %>
+	<form action="/" method="post" enctype="multipart/form-data">
+		<input type="file" id="file" name="picture">
+		<input type="submit" id="analyse">
+	</form>
+
+</body>
+</html>
