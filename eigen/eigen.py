@@ -20,10 +20,9 @@ def get_images_and_labels(path):
         for (x, y, w, h) in faces:
             images.append(image[y: y + h, x: x + w])
             labels.append(nbr)
-            #cv2.imshow("Adding faces to traning set...", image[y: y + h, x: x + w])
     return images, labels
 
-path = './pictures'
+path = '../web/pictures'
 
 images, labels = get_images_and_labels(path)
 cv2.destroyAllWindows()
@@ -33,8 +32,13 @@ recognizer.train(images, np.array(labels))
 image_pil = Image.open(picture).convert('L')
 image = np.array(image_pil, 'uint8')
 faces = faceCascade.detectMultiScale(image)
+nbr = ""
 for(x,y,w,h) in faces:
     nbr = recognizer.predict(image[y: y + h, x: x + w])
-    nbr = "../pictures/" + nbr + ".jpg"
-    # request number
+    nbr = "pictures/" + nbr + ".jpg"
     break
+
+if nbr:
+    # request number
+else:
+    # request number = 0
