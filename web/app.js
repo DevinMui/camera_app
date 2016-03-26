@@ -6,7 +6,7 @@ var spawn = require("child_process").execFileSync;
 var sys = require('sys')
 var crypto = require('crypto');
 var PythonShell = require('python-shell');
-
+var url = "mongodb://localhost:27017/test"
 var storage = multer.diskStorage({
 	destination: function(req, file, cb){
 		cb(null, 'uploads/')
@@ -82,6 +82,19 @@ app.get('/', function(req, res){
 	res.render('index', {"image": ""})
 })
 
+var docu = ""
+
+var find = function(db, file, callback) {
+   var cursor = db.collection('users').find({"pictures": file});
+   cursor.each(function(err, doc) {
+      assert.equal(err, null);
+      if (doc != null) {
+      	//console.dir(doc)
+      	callback(doc)
+      }
+   });
+};
+
 app.post('/', upload.single('picture'), function(req, res){
 	var options = {
 		args: ["uploads/" + req.file.filename]
@@ -89,8 +102,18 @@ app.post('/', upload.single('picture'), function(req, res){
 	PythonShell.run('eigen.py', options, function (err) {
 	  if (err) throw err;
 	  console.log('finished');
-	  user = User.find({ "pictures": file })
-		res.render("index", {"image": req.file.filename })
+	  MongoClient.connect(url, function(err, db) {
+		  assert.equal(null, err);
+		  find(db, file, function(doc) {
+		  		console.dir(doc)
+		  		console.log(doc.name)
+		  		console.log(doc.fb)
+		  		console.log(doc.tw)
+		  		res.render("index", {"image": req.file.filename })
+		      db.close();
+		  });
+		});
+
 	});
 })
 
